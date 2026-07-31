@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware";
-import { errorMiddleware } from "./middlewares/error.middleware";
+import { errorHandler } from "./middlewares/error.middleware";
 
 import routes from "./routes";
 
@@ -24,12 +25,14 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
 app.use("/api/v1", routes);
 
 // 404
 app.use(notFoundMiddleware);
 
 // Global Error Handler
-app.use(errorMiddleware);
+app.use(errorHandler);
 
 export default app;

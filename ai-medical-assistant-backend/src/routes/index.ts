@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { successResponse } from "../utils/apiResponse";
 import { prisma } from "../lib/prisma";
 import redis from "../lib/redis";
+import authRoutes from "../modules/auth/auth.routes";
 
 const router = Router();
 
@@ -25,5 +26,9 @@ router.get(
     );
   })
 );
+
+console.log("authRoutes:", authRoutes);
+
+router.use("/auth", authRoutes);
 
 export default router;

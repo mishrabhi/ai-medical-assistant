@@ -15,6 +15,12 @@ const schema = z.object({
   JWT_ACCESS_SECRET: z.string().min(16),
 
   JWT_REFRESH_SECRET: z.string().min(16),
+
+  JWT_ACCESS_EXPIRES_IN: z.string(),
+
+  JWT_REFRESH_EXPIRES_IN: z.string(),
+
+  CLIENT_URL: z.string().url(),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -48,3 +48,29 @@ Every module follows the same folder structure:
 Shared utilities are placed inside the shared and utils folders.
 
 
+## Authentication Architecture
+
+The authentication module follows the same layered architecture as the rest of the application.
+
+```
+Request
+   ↓
+Route
+   ↓
+Controller
+   ↓
+Service
+   ↓
+Repository
+   ↓
+Prisma
+```
+
+Authentication uses:
+
+- JWT Access Tokens
+- Refresh Token Rotation
+- HttpOnly Cookies
+- Password Hashing with bcrypt
+- Zod Validation
+

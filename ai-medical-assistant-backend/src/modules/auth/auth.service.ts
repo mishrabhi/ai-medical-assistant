@@ -1,0 +1,115 @@
+import jwt from "jsonwebtoken";
+import { env } from "../../config/env";
+import {
+  comparePassword,
+  hashPassword,
+} from "../../lib/bcrypt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../lib/jwt";
+import {
+  authRepository,
+} from "./auth.repository";
+import {
+  LoginUserDTO,
+  RegisterUserDTO,
+} from "./auth.types";
+
+export class AuthService {
+//register user
+  async register(data: RegisterUserDTO) {
+    const existingUser =
+      await authRepository.findUserByEmail(data.email);
+
+    if (existingUser) {
+      throw new Error("User already exists");
+    }
+
+    const passwordHash = await hashPassword(data.password);
+
+    const user =
+      await authRepository.createUser({
+        ...data,
+        passwordHash,
+      });
+
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken =
+      generateAccessToken(payload);
+
+    const refreshToken =
+      generateRefreshToken(payload);
+
+    const decoded = jwt.decode(refreshToken) as {
+      exp: number;
+    };
+
+    await authRepository.createRefreshToken(
+      user.id,
+      refreshToken,
+      new Date(decoded.exp * 1000)
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
+  }
+
+  //login user
+   async login(data: LoginUserDTO) {
+    const user =
+      await authRepository.findUserByEmail(data.email);
+
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+
+    const passwordMatch =
+      await comparePassword(
+        data.password,
+        user.passwordHash
+      );
+
+    if (!passwordMatch) {
+      throw new Error("Invalid credentials");
+    }
+
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken =
+      generateAccessToken(payload);
+
+    const refreshToken =
+      generateRefreshToken(payload);
+
+    const decoded = jwt.decode(refreshToken) as {
+      exp: number;
+    };
+
+    await authRepository.createRefreshToken(
+      user.id,
+      refreshToken,
+      new Date(decoded.exp * 1000)
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
+  }
+}
+
+export const authService = new AuthService();
