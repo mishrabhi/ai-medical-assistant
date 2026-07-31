@@ -1,8 +1,12 @@
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
 import { comparePassword, hashPassword } from "../../lib/bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../../lib/jwt";
-import { authRepository } from "./auth.repository";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../../lib/jwt";
+import { AuthRepository, authRepository } from "./auth.repository";
 import { LoginUserDTO, RegisterUserDTO } from "./auth.types";
 
 export class AuthService {
@@ -100,6 +104,48 @@ export class AuthService {
       throw new Error("User not found");
     }
     return user;
+  }
+
+  //generate new refresh-token
+  async refreshToken(token: string) {
+    const storedToken = await authRepository.findRefreshToken(token);
+
+    if (!storedToken) {
+      throw new Error("Invalid refresh token");
+    }
+
+    const payload = verifyRefreshToken(token);
+
+    await authRepository.deleteRefreshToken(token);
+
+    const newPayload = {
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
+    };
+
+    const accessToken = generateAccessToken(newPayload);
+
+    const refreshToken = generateRefreshToken(newPayload);
+
+    const decoded = jwt.decode(refreshToken) as {
+      exp: number;
+    };
+
+    await authRepository.createRefreshToken(
+      payload.userId,
+      refreshToken,
+      new Date(decoded.exp * 1000),
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async logout(token: string) {
+    await authRepository.deleteRefreshToken(token);
   }
 }
 

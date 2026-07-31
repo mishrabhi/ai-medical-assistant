@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "./auth.service";
-import { setRefreshTokenCookie } from "../../lib/cookies";
+import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../lib/cookies";
 
 class AuthController {
   //register
@@ -45,6 +45,49 @@ class AuthController {
       data: user,
     });
   };
+
+  //refresh-token
+  refresh = async (req: Request, res: Response) => {
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token missing",
+      });
+    }
+
+    const result = await authService.refreshToken(token);
+
+    setRefreshTokenCookie(res, result.refreshToken);
+
+    return res.json({
+      success: true,
+      message: "Token generated successfully",
+      data: {
+        accessToken: result.accessToken,
+      },
+    });
+  };
+
+  //logout
+  logout = async (
+    req: Request,
+    res: Response
+  ) => {
+    const token = req.cookies.refreshToken;
+
+    if(token){
+        await authService.logout(token);
+    }
+
+    clearRefreshTokenCookie(res);
+
+    return res.json({
+        success: true,
+        message: "Logged out successfully"
+    })
+  }
 }
 
 export const authController = new AuthController();

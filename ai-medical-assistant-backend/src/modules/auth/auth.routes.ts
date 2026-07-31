@@ -28,4 +28,14 @@ router.get(
   asyncHandler(authController.me)
 );
 
+router.post(
+  "/refresh",
+  asyncHandler(authController.refresh)
+);
+
+router.post(
+  "/logout",
+  asyncHandler(authController.logout)
+);
+
 export default router;
