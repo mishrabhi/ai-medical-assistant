@@ -27,8 +27,6 @@ router.get(
   })
 );
 
-console.log("authRoutes:", authRoutes);
-
 router.use("/auth", authRoutes);
 
 export default router;
