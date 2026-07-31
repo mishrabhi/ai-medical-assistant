@@ -65,6 +65,25 @@ export class AuthRepository {
       },
     });
   }
+
+  async getCurrentUser(id: string) {
+  return prisma.user.findUnique({
+    where: {
+      id,
+    },
+
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      avatar: true,
+      isVerified: true,
+      createdAt: true,
+    },
+  });
+}
 }
 
 export const authRepository = new AuthRepository();

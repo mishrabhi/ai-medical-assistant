@@ -3,10 +3,8 @@ import { authService } from "./auth.service";
 import { setRefreshTokenCookie } from "../../lib/cookies";
 
 class AuthController {
- register = async (
-    req: Request,
-    res: Response
-  ) => {
+  //register
+  register = async (req: Request, res: Response) => {
     const result = await authService.register(req.body);
 
     setRefreshTokenCookie(res, result.refreshToken);
@@ -21,10 +19,8 @@ class AuthController {
     });
   };
 
-  login = async (
-    req: Request,
-    res: Response
-  ) => {
+  //login
+  login = async (req: Request, res: Response) => {
     const result = await authService.login(req.body);
 
     setRefreshTokenCookie(res, result.refreshToken);
@@ -36,6 +32,17 @@ class AuthController {
         accessToken: result.accessToken,
         user: result.user,
       },
+    });
+  };
+
+  //current user
+  me = async (req: Request, res: Response) => {
+    const user = await authService.getCurrentUser(req.user!.userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Current user fetched successfully",
+      data: user,
     });
   };
 }

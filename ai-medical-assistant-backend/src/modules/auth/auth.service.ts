@@ -1,26 +1,14 @@
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
-import {
-  comparePassword,
-  hashPassword,
-} from "../../lib/bcrypt";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../../lib/jwt";
-import {
-  authRepository,
-} from "./auth.repository";
-import {
-  LoginUserDTO,
-  RegisterUserDTO,
-} from "./auth.types";
+import { comparePassword, hashPassword } from "../../lib/bcrypt";
+import { generateAccessToken, generateRefreshToken } from "../../lib/jwt";
+import { authRepository } from "./auth.repository";
+import { LoginUserDTO, RegisterUserDTO } from "./auth.types";
 
 export class AuthService {
-//register user
+  //register user
   async register(data: RegisterUserDTO) {
-    const existingUser =
-      await authRepository.findUserByEmail(data.email);
+    const existingUser = await authRepository.findUserByEmail(data.email);
 
     if (existingUser) {
       throw new Error("User already exists");
@@ -28,11 +16,10 @@ export class AuthService {
 
     const passwordHash = await hashPassword(data.password);
 
-    const user =
-      await authRepository.createUser({
-        ...data,
-        passwordHash,
-      });
+    const user = await authRepository.createUser({
+      ...data,
+      passwordHash,
+    });
 
     const payload = {
       userId: user.id,
@@ -40,11 +27,9 @@ export class AuthService {
       role: user.role,
     };
 
-    const accessToken =
-      generateAccessToken(payload);
+    const accessToken = generateAccessToken(payload);
 
-    const refreshToken =
-      generateRefreshToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
     const decoded = jwt.decode(refreshToken) as {
       exp: number;
@@ -53,7 +38,7 @@ export class AuthService {
     await authRepository.createRefreshToken(
       user.id,
       refreshToken,
-      new Date(decoded.exp * 1000)
+      new Date(decoded.exp * 1000),
     );
 
     return {
@@ -64,19 +49,17 @@ export class AuthService {
   }
 
   //login user
-   async login(data: LoginUserDTO) {
-    const user =
-      await authRepository.findUserByEmail(data.email);
+  async login(data: LoginUserDTO) {
+    const user = await authRepository.findUserByEmail(data.email);
 
     if (!user) {
       throw new Error("Invalid credentials");
     }
 
-    const passwordMatch =
-      await comparePassword(
-        data.password,
-        user.passwordHash
-      );
+    const passwordMatch = await comparePassword(
+      data.password,
+      user.passwordHash,
+    );
 
     if (!passwordMatch) {
       throw new Error("Invalid credentials");
@@ -88,11 +71,9 @@ export class AuthService {
       role: user.role,
     };
 
-    const accessToken =
-      generateAccessToken(payload);
+    const accessToken = generateAccessToken(payload);
 
-    const refreshToken =
-      generateRefreshToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
     const decoded = jwt.decode(refreshToken) as {
       exp: number;
@@ -101,7 +82,7 @@ export class AuthService {
     await authRepository.createRefreshToken(
       user.id,
       refreshToken,
-      new Date(decoded.exp * 1000)
+      new Date(decoded.exp * 1000),
     );
 
     return {
@@ -109,6 +90,16 @@ export class AuthService {
       refreshToken,
       user,
     };
+  }
+
+  //get current logged-in user
+  async getCurrentUser(userId: string) {
+    const user = await authRepository.getCurrentUser(userId);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
   }
 }
 

@@ -6,6 +6,7 @@ import {
 } from "./auth.validation";
 import { validate } from "../../middlewares/validation.middleware";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { authenticate } from "../../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -19,6 +20,12 @@ router.post(
     "/login",
     validate(loginSchema),
     asyncHandler(authController.login)
+);
+
+router.get(
+  "/me",
+  authenticate,
+  asyncHandler(authController.me)
 );
 
 export default router;
