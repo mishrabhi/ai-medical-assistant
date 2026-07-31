@@ -4,6 +4,7 @@ import { successResponse } from "../utils/apiResponse";
 import { prisma } from "../lib/prisma";
 import redis from "../lib/redis";
 import authRoutes from "../modules/auth/auth.routes";
+import reportRoutes from "../modules/reports";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.get(
 );
 
 router.use("/auth", authRoutes);
+router.use("/reports", reportRoutes);
 
 export default router;

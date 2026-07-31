@@ -74,3 +74,14 @@ Authentication uses:
 - Password Hashing with bcrypt
 - Zod Validation
 
+
+## Authentication Layers
+
+The authentication module follows a layered architecture:
+
+- Controller: Handles HTTP requests and responses.
+- Service: Contains authentication business logic.
+- Repository: Handles database access using Prisma.
+- Shared Libraries: JWT, bcrypt, cookies, and Prisma client.
+
+Business logic never accesses Prisma directly. All database interactions go through the repository layer.

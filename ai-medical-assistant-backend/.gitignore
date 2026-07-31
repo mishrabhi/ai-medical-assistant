@@ -5,3 +5,6 @@ uploads
 *.log
 
 /src/generated/prisma
+
+uploads/*
+!uploads/.gitkeep

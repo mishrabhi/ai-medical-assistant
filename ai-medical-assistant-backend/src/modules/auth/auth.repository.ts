@@ -14,9 +14,7 @@ export class AuthRepository {
     });
   }
 
-  async createUser(
-    data: RegisterUserDTO & { passwordHash: string }
-  ) {
+  async createUser(data: RegisterUserDTO & { passwordHash: string }) {
     return prisma.user.create({
       data: {
         firstName: data.firstName,
@@ -27,11 +25,7 @@ export class AuthRepository {
     });
   }
 
-  async createRefreshToken(
-    userId: string,
-    token: string,
-    expiresAt: Date
-  ) {
+  async createRefreshToken(userId: string, token: string, expiresAt: Date) {
     return prisma.refreshToken.create({
       data: {
         userId,
@@ -41,7 +35,7 @@ export class AuthRepository {
     });
   }
 
-   async findRefreshToken(token: string) {
+  async findRefreshToken(token: string) {
     return prisma.refreshToken.findUnique({
       where: { token },
       include: {
@@ -50,7 +44,7 @@ export class AuthRepository {
     });
   }
 
-   async deleteRefreshToken(token: string) {
+  async deleteRefreshToken(token: string) {
     return prisma.refreshToken.delete({
       where: {
         token,
@@ -67,24 +61,23 @@ export class AuthRepository {
   }
 
   async getCurrentUser(id: string) {
-  return prisma.user.findUnique({
-    where: {
-      id,
-    },
+    return prisma.user.findUnique({
+      where: {
+        id,
+      },
 
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      avatar: true,
-      isVerified: true,
-      createdAt: true,
-    },
-  });
-}
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        avatar: true,
+        isVerified: true,
+        createdAt: true,
+      },
+    });
+  }
 }
 
 export const authRepository = new AuthRepository();
-
