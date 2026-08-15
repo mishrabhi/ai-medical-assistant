@@ -18,68 +18,84 @@ class ReportController {
   };
 
   //get all
-  getAll = async(
-    req: Request,
-    res: Response
-  ) => {
-    const reports = await reportService.getReports(
-      req.user!.userId
-    )
+  getAll = async (req: Request, res: Response) => {
+    const reports = await reportService.getReports(req.user!.userId);
     return res.json({
       success: true,
-      data: reports
-    })
-  }
+      data: reports,
+    });
+  };
 
   //getById
- getById = async (
-  req: Request,
-  res: Response
-) => {
-  const report =
-    await reportService.getReportById(
+  getById = async (req: Request, res: Response) => {
+    const report = await reportService.getReportById(
       req.params.id as string,
-      req.user!.userId
+      req.user!.userId,
     );
 
-  return res.json({
-    success: true,
-    data: report,
-  });
-};
+    return res.json({
+      success: true,
+      data: report,
+    });
+  };
 
   //delete
-  delete = async (
-  req: Request,
-  res: Response
-) => {
-  await reportService.deleteReport(
-    req.params.id as string,
-    req.user!.userId
-  );
+  delete = async (req: Request, res: Response) => {
+    await reportService.deleteReport(req.params.id as string, req.user!.userId);
 
-  return res.json({
-    success: true,
-    message:
-      "Medical report deleted successfully.",
-  });
-};
+    return res.json({
+      success: true,
+      message: "Medical report deleted successfully.",
+    });
+  };
 
-//process OCR
-processOCR = async (
+  //process OCR
+  processOCR = async (req: Request, res: Response) => {
+    const result = await reportService.processOCR(
+      req.params.id as string,
+      req.user!.userId,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "OCR processing completed successfully.",
+      data: result,
+    });
+  };
+
+  //ai service
+  analyze = async (
   req: Request,
   res: Response
 ) => {
   const result =
-    await reportService.processOCR(
+    await reportService.analyzeReport(
       req.params.id as string,
       req.user!.userId
     );
 
   return res.status(200).json({
     success: true,
-    message: "OCR processing completed successfully.",
+    message:
+      "Medical report analysis completed successfully.",
     data: result,
+  });
+};
+  //get analysed report
+  getAnalysis = async (
+  req: Request,
+  res: Response
+) => {
+  const report =
+    await reportService.getAnalyzedReport(
+      req.params.id as string,
+      req.user!.userId
+    );
+
+  return res.status(200).json({
+    success: true,
+    message: "Medical report analysis fetched successfully.",
+    data: report,
   });
 };
 }

@@ -52,7 +52,7 @@ class ReportRepository {
     });
   }
 
-  //update ocr
+  //update ocr text
   async updateOCRText(
   reportId: string,
   userId: string,
@@ -65,6 +65,49 @@ class ReportRepository {
     },
     data: {
       ocrText,
+    },
+  });
+}
+
+  //update AI summary
+  async updateAISummary(
+  reportId: string,
+  userId: string,
+  aiSummary: string
+) {
+  return prisma.medicalReport.updateMany({
+    where: {
+      id: reportId,
+      userId,
+    },
+    data: {
+      aiSummary,
+    },
+  });
+}
+
+//find analyzed report
+async findAnalyzedReport(
+  reportId: string,
+  userId: string
+) {
+  return prisma.medicalReport.findFirst({
+    where: {
+      id: reportId,
+      userId,
+    },
+    select: {
+      id: true,
+      title: true,
+      reportType: true,
+      fileName: true,
+      fileUrl: true,
+      mimeType: true,
+      fileSize: true,
+      ocrText: true,
+      aiSummary: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 }

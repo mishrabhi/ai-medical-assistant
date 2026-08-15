@@ -43,4 +43,16 @@ router.post(
   asyncHandler(reportController.processOCR)
 );
 
+router.post(
+  "/:id/analyze",
+  authenticate,
+  asyncHandler(reportController.analyze)
+);
+
+router.get(
+  "/:id/analysis",
+  authenticate,
+  asyncHandler(reportController.getAnalysis)
+);
+
 export default router;

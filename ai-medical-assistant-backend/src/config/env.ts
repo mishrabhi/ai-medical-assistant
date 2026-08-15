@@ -21,6 +21,8 @@ const schema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string(),
 
   CLIENT_URL: z.string().url(),
+
+  OPENAI_API_KEY: z.string(),
 });
 
 const parsed = schema.safeParse(process.env);

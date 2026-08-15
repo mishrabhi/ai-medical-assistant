@@ -3,6 +3,7 @@ import { reportRepository } from "./report.repository";
 import fs from "fs/promises";
 import path from "path";
 import { ocrService } from "../../services/ocr/ocr.service";
+import { aiService } from "../../services/ai/ai.service";
 
 class ReportService {
   //upload report
@@ -53,7 +54,7 @@ class ReportService {
     await reportRepository.delete(reportId, userId);
   }
 
-  //process OCR
+  //process OCR text
   async processOCR(reportId: string, userId: string) {
     const report = await reportRepository.findById(reportId, userId);
 
@@ -75,6 +76,62 @@ class ReportService {
       text,
     };
   }
+
+  //ai Service
+  async analyzeReport(
+  reportId: string,
+  userId: string
+) {
+  const report =
+    await reportRepository.findById(
+      reportId,
+      userId
+    );
+
+  if (!report) {
+    throw new Error("Medical report not found.");
+  }
+
+  if (!report.ocrText) {
+    throw new Error(
+      "OCR must be completed before AI analysis."
+    );
+  }
+
+  const aiSummary =
+    await aiService.analyzeMedicalReport(
+      report.ocrText
+    );
+
+  await reportRepository.updateAISummary(
+    reportId,
+    userId,
+    aiSummary
+  );
+
+  return {
+    reportId,
+    aiSummary,
+  };
+}
+
+//get analyzed report
+async getAnalyzedReport(
+  reportId: string,
+  userId: string
+) {
+  const report =
+    await reportRepository.findAnalyzedReport(
+      reportId,
+      userId
+    );
+
+  if (!report) {
+    throw new Error("Medical report not found.");
+  }
+
+  return report;
+}
 }
 
 export const reportService = new ReportService();
