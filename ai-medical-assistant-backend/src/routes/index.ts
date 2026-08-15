@@ -7,6 +7,8 @@ import authRoutes from "../modules/auth/auth.routes";
 import reportRoutes from "../modules/reports";
 import symptomRoutes from "../modules/symptoms";
 import chatRoutes from "../modules/chat";
+import doctorRoutes from "../modules/doctors";
+import appointmentRoutes from "../modules/appointments";
 
 const router = Router();
 
@@ -25,14 +27,16 @@ router.get(
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
       },
-      "AI Medical Assistant API is healthy"
+      "AI Medical Assistant API is healthy",
     );
-  })
+  }),
 );
 
 router.use("/auth", authRoutes);
 router.use("/reports", reportRoutes);
 router.use("/symptoms", symptomRoutes);
 router.use("/chat", chatRoutes);
+router.use("/doctors", doctorRoutes);
+router.use("/appointments", appointmentRoutes);
 
 export default router;
