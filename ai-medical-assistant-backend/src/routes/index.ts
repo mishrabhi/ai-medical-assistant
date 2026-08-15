@@ -7,12 +7,13 @@ import authRoutes from "../modules/auth/auth.routes";
 import reportRoutes from "../modules/reports";
 import symptomRoutes from "../modules/symptoms";
 import chatRoutes from "../modules/chat";
-import doctorRoutes from "../modules/doctors";
+import doctorRoutes, { adminDoctorRoutes } from "../modules/doctors";
 import appointmentRoutes from "../modules/appointments";
 import reminderRoutes from "../modules/reminders";
 import notificationRoutes from "../modules/notifications";
 import emergencyContactRoutes from "../modules/emergency-contacts";
 import userRoutes from "../modules/users";
+import adminRoutes from "../modules/admin";
 
 const router = Router();
 
@@ -46,5 +47,7 @@ router.use("/reminders", reminderRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/emergency-contacts", emergencyContactRoutes);
 router.use("/users", userRoutes);
+router.use("/admin/doctors", adminDoctorRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;

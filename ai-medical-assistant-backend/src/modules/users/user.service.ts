@@ -59,52 +59,34 @@ class UserService {
   }
 
   //update avatar
-  async updateAvatar(
-  userId: string,
-  avatar: string
-) {
-  const user =
-    await userRepository.findById(userId);
+  async updateAvatar(userId: string, avatar: string) {
+    const user = await userRepository.findById(userId);
 
-  if (!user) {
-    throw new Error("User not found.");
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const updatedUser = await userRepository.updateAvatar(userId, avatar);
+
+    const { passwordHash, ...profile } = updatedUser;
+
+    return profile;
   }
 
-  const updatedUser =
-    await userRepository.updateAvatar(
-      userId,
-      avatar
-    );
+  //deactivate account
+  async deactivateAccount(userId: string) {
+    const user = await userRepository.findById(userId);
 
-  const {
-    passwordHash,
-    ...profile
-  } = updatedUser;
+    if (!user) {
+      throw new Error("User not found.");
+    }
 
-  return profile;
-}
+    await userRepository.updateAccountStatus(userId, false);
 
-//deactivate account
-async deactivateAccount(
-  userId: string
-) {
-  const user =
-    await userRepository.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found.");
+    return {
+      message: "Account deactivated successfully.",
+    };
   }
-
-  await userRepository.updateAccountStatus(
-    userId,
-    false
-  );
-
-  return {
-    message:
-      "Account deactivated successfully.",
-  };
-}
 }
 
 export const userService = new UserService();

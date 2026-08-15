@@ -4,10 +4,7 @@ import { PDFParse } from "pdf-parse";
 import { createWorker } from "tesseract.js";
 
 class OCRService {
-  async extractText(
-    filePath: string,
-    mimeType: string
-  ) {
+  async extractText(filePath: string, mimeType: string) {
     const absolutePath = path.resolve(filePath);
 
     if (mimeType === "application/pdf") {
@@ -25,9 +22,7 @@ class OCRService {
     throw new Error("Unsupported file type for OCR.");
   }
 
-  private async extractPdfText(
-    filePath: string
-  ) {
+  private async extractPdfText(filePath: string) {
     const buffer = await fs.readFile(filePath);
 
     const parser = new PDFParse({
@@ -43,9 +38,7 @@ class OCRService {
     }
   }
 
-  private async extractImageText(
-    filePath: string
-  ) {
+  private async extractImageText(filePath: string) {
     const worker = await createWorker("eng");
 
     try {

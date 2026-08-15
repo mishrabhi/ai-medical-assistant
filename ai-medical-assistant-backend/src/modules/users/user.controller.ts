@@ -39,39 +39,28 @@ class UserController {
   };
 
   //update avatar
-  updateAvatar = async (
-  req: Request,
-  res: Response
-) => {
-  const result =
-    await userService.updateAvatar(
+  updateAvatar = async (req: Request, res: Response) => {
+    const result = await userService.updateAvatar(
       req.user!.userId,
-      req.body.avatar
+      req.body.avatar,
     );
 
-  return res.status(200).json({
-    success: true,
-    message:
-      "Profile picture updated successfully.",
-    data: result,
-  });
-};
+    return res.status(200).json({
+      success: true,
+      message: "Profile picture updated successfully.",
+      data: result,
+    });
+  };
 
-//deactivate account
-deactivateAccount = async (
-  req: Request,
-  res: Response
-) => {
-  const result =
-    await userService.deactivateAccount(
-      req.user!.userId
-    );
+  //deactivate account
+  deactivateAccount = async (req: Request, res: Response) => {
+    const result = await userService.deactivateAccount(req.user!.userId);
 
-  return res.status(200).json({
-    success: true,
-    message: result.message,
-  });
-};
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  };
 }
 
 export const userController = new UserController();

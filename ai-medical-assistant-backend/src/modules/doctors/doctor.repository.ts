@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { CreateDoctorDTO } from "./doctor.types";
+import { CreateDoctorDTO, UpdateDoctorDTO } from "./doctor.types";
 
 class DoctorRepository {
   async create(data: CreateDoctorDTO) {
@@ -24,10 +24,7 @@ class DoctorRepository {
     });
   }
 
-  async updateAvailability(
-    id: string,
-    isAvailable: boolean
-  ) {
+  async updateAvailability(id: string, isAvailable: boolean) {
     return prisma.doctor.updateMany({
       where: {
         id,
@@ -37,7 +34,23 @@ class DoctorRepository {
       },
     });
   }
+
+  async update(id: string, data: UpdateDoctorDTO) {
+    return prisma.doctor.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+
+  async delete(id: string) {
+    return prisma.doctor.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }
 
-export const doctorRepository =
-  new DoctorRepository();
+export const doctorRepository = new DoctorRepository();

@@ -1,10 +1,8 @@
-import { CreateDoctorDTO } from "./doctor.types";
+import { CreateDoctorDTO, UpdateDoctorDTO } from "./doctor.types";
 import { doctorRepository } from "./doctor.repository";
 
 class DoctorService {
-  async createDoctor(
-    data: CreateDoctorDTO
-  ) {
+  async createDoctor(data: CreateDoctorDTO) {
     return doctorRepository.create(data);
   }
 
@@ -13,8 +11,7 @@ class DoctorService {
   }
 
   async getDoctorById(id: string) {
-    const doctor =
-      await doctorRepository.findById(id);
+    const doctor = await doctorRepository.findById(id);
 
     if (!doctor) {
       throw new Error("Doctor not found.");
@@ -23,15 +20,8 @@ class DoctorService {
     return doctor;
   }
 
-  async updateAvailability(
-    id: string,
-    isAvailable: boolean
-  ) {
-    const result =
-      await doctorRepository.updateAvailability(
-        id,
-        isAvailable
-      );
+  async updateAvailability(id: string, isAvailable: boolean) {
+    const result = await doctorRepository.updateAvailability(id, isAvailable);
 
     if (result.count === 0) {
       throw new Error("Doctor not found.");
@@ -39,7 +29,30 @@ class DoctorService {
 
     return doctorRepository.findById(id);
   }
+
+  async updateDoctor(id: string, data: UpdateDoctorDTO) {
+    const doctor = await doctorRepository.findById(id);
+
+    if (!doctor) {
+      throw new Error("Doctor not found.");
+    }
+
+    return doctorRepository.update(id, data);
+  }
+
+  async deleteDoctor(id: string) {
+    const doctor = await doctorRepository.findById(id);
+
+    if (!doctor) {
+      throw new Error("Doctor not found.");
+    }
+
+    await doctorRepository.delete(id);
+
+    return {
+      message: "Doctor deleted successfully.",
+    };
+  }
 }
 
-export const doctorService =
-  new DoctorService();
+export const doctorService = new DoctorService();
