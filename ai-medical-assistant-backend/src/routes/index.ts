@@ -9,6 +9,7 @@ import symptomRoutes from "../modules/symptoms";
 import chatRoutes from "../modules/chat";
 import doctorRoutes from "../modules/doctors";
 import appointmentRoutes from "../modules/appointments";
+import reminderRoutes from "../modules/reminders";
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.use("/symptoms", symptomRoutes);
 router.use("/chat", chatRoutes);
 router.use("/doctors", doctorRoutes);
 router.use("/appointments", appointmentRoutes);
+router.use("/reminders", reminderRoutes);
 
 export default router;
