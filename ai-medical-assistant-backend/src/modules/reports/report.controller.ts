@@ -63,7 +63,25 @@ class ReportController {
     message:
       "Medical report deleted successfully.",
   });
-}
+};
+
+//process OCR
+processOCR = async (
+  req: Request,
+  res: Response
+) => {
+  const result =
+    await reportService.processOCR(
+      req.params.id as string,
+      req.user!.userId
+    );
+
+  return res.status(200).json({
+    success: true,
+    message: "OCR processing completed successfully.",
+    data: result,
+  });
+};
 }
 
 export const reportController = new ReportController();

@@ -51,6 +51,23 @@ class ReportRepository {
       },
     });
   }
+
+  //update ocr
+  async updateOCRText(
+  reportId: string,
+  userId: string,
+  ocrText: string
+) {
+  return prisma.medicalReport.updateMany({
+    where: {
+      id: reportId,
+      userId,
+    },
+    data: {
+      ocrText,
+    },
+  });
+}
 }
 
 export const reportRepository = new ReportRepository();

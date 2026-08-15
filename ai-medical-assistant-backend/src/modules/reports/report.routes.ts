@@ -37,4 +37,10 @@ router.delete(
   asyncHandler(reportController.delete)
 );
 
+router.post(
+  "/:id/ocr",
+  authenticate,
+  asyncHandler(reportController.processOCR)
+);
+
 export default router;
