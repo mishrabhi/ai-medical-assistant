@@ -92,22 +92,30 @@ class ReminderRepository {
   }
 
   //update scheduled for
-  async updateScheduledFor(
-  id: string,
-  userId: string,
-  scheduledFor: Date
-) {
-  return prisma.reminder.updateMany({
-    where: {
-      id,
-      userId,
-    },
-    data: {
-      scheduledFor,
-      status: "ACTIVE",
-    },
-  });
-}
+  async updateScheduledFor(id: string, userId: string, scheduledFor: Date) {
+    return prisma.reminder.updateMany({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        scheduledFor,
+        status: "ACTIVE",
+      },
+    });
+  }
+
+  //find due reminders
+  async findDueReminders() {
+    return prisma.reminder.findMany({
+      where: {
+        status: "ACTIVE",
+        scheduledFor: {
+          lte: new Date(),
+        },
+      },
+    });
+  }
 }
 
 export const reminderRepository = new ReminderRepository();

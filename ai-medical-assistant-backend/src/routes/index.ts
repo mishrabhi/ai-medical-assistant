@@ -10,6 +10,7 @@ import chatRoutes from "../modules/chat";
 import doctorRoutes from "../modules/doctors";
 import appointmentRoutes from "../modules/appointments";
 import reminderRoutes from "../modules/reminders";
+import notificationRoutes from "../modules/notifications";
 
 const router = Router();
 
@@ -40,5 +41,6 @@ router.use("/chat", chatRoutes);
 router.use("/doctors", doctorRoutes);
 router.use("/appointments", appointmentRoutes);
 router.use("/reminders", reminderRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { startReminderJob } from "./jobs/reminder.job";
 
 dotenv.config();
 
@@ -7,4 +8,6 @@ import { env } from "./config/env";
 
 app.listen(env.PORT, () => {
   console.log(`Server running on port ${env.PORT}`);
+  startReminderJob();
 });
+
