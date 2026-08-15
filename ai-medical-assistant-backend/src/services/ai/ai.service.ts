@@ -6,14 +6,11 @@ const openai = new OpenAI({
 });
 
 class AIService {
-  async analyzeMedicalReport(
-    reportText: string
-  ) {
-    const response =
-      await openai.responses.create({
-        model: "gpt-5-mini",
+  async analyzeMedicalReport(reportText: string) {
+    const response = await openai.responses.create({
+      model: "gpt-5-mini",
 
-        instructions: `
+      instructions: `
 You are a medical information assistant.
 
 Analyze the provided medical report and return
@@ -43,18 +40,15 @@ LOW, MEDIUM, HIGH.
 Medical report:
 `,
 
-        input: reportText,
-      });
+      input: reportText,
+    });
 
     return response.output_text;
   }
 
   //analyze symptoms
-  async analyzeSymptoms(
-  symptoms: string[]
-) {
-  const response =
-    await openai.responses.create({
+  async analyzeSymptoms(symptoms: string[]) {
+    const response = await openai.responses.create({
       model: "gpt-5-mini",
 
       instructions: `
@@ -103,8 +97,43 @@ Symptoms:
       input: symptoms.join(", "),
     });
 
-  return response.output_text;
-}
+    return response.output_text;
+  }
+
+  //chat-bots
+  async chat(
+    messages: {
+      role: "user" | "assistant";
+      content: string;
+    }[],
+  ) {
+    const response = await openai.responses.create({
+      model: "gpt-5-mini",
+
+      instructions: `
+You are an AI medical information assistant.
+
+Your job is to help users understand health and
+medical information in a clear and simple way.
+
+Important:
+- Do not diagnose users.
+- Do not claim certainty about medical conditions.
+- Do not replace a qualified healthcare professional.
+- Provide general educational information.
+- If symptoms may indicate an emergency, advise the
+  user to seek urgent medical attention.
+- Be clear when information is uncertain or incomplete.
+- Do not invent medical facts.
+
+Keep responses concise and easy to understand.
+`,
+
+      input: messages,
+    });
+
+    return response.output_text;
+  }
 }
 
 export const aiService = new AIService();

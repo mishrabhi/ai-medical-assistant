@@ -6,6 +6,7 @@ import redis from "../lib/redis";
 import authRoutes from "../modules/auth/auth.routes";
 import reportRoutes from "../modules/reports";
 import symptomRoutes from "../modules/symptoms";
+import chatRoutes from "../modules/chat";
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.get(
 router.use("/auth", authRoutes);
 router.use("/reports", reportRoutes);
 router.use("/symptoms", symptomRoutes);
+router.use("/chat", chatRoutes);
 
 export default router;
