@@ -12,6 +12,7 @@ import appointmentRoutes from "../modules/appointments";
 import reminderRoutes from "../modules/reminders";
 import notificationRoutes from "../modules/notifications";
 import emergencyContactRoutes from "../modules/emergency-contacts";
+import userRoutes from "../modules/users";
 
 const router = Router();
 
@@ -44,5 +45,6 @@ router.use("/appointments", appointmentRoutes);
 router.use("/reminders", reminderRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/emergency-contacts", emergencyContactRoutes);
+router.use("/users", userRoutes);
 
 export default router;
