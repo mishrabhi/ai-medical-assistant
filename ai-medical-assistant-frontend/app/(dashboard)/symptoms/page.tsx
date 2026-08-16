@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Activity, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity, AlertTriangle, Search, ShieldAlert, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useSymptoms } from "@/hooks/useSymptoms";
 
 const symptomOptions = [
   "Fever",
@@ -22,9 +23,11 @@ const symptomOptions = [
 ];
 
 export default function SymptomsPage() {
+  const { checkMutation, listQuery } = useSymptoms();
   const [query, setQuery] = useState("");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(["Fever", "Fatigue"]);
 
+  const recentChecks = useMemo(() => listQuery.data?.data ?? [], [listQuery.data]);
   const filteredSymptoms = symptomOptions.filter((symptom) =>
     symptom.toLowerCase().includes(query.toLowerCase()),
   );
@@ -38,6 +41,16 @@ export default function SymptomsPage() {
 
   const removeSymptom = (symptom: string) => {
     setSelectedSymptoms((current) => current.filter((item) => item !== symptom));
+  };
+
+  const handleCheckSymptoms = async () => {
+    if (selectedSymptoms.length === 0) return;
+
+    try {
+      await checkMutation.mutateAsync({ symptoms: selectedSymptoms });
+    } catch {
+      // error is surfaced by mutation state
+    }
   };
 
   return (
@@ -90,16 +103,51 @@ export default function SymptomsPage() {
           </div>
 
           <div className="flex gap-3">
-            <Button type="button" className="rounded-xl">
+            <Button type="button" className="rounded-xl" onClick={handleCheckSymptoms} disabled={checkMutation.isPending || selectedSymptoms.length === 0}>
               <Activity className="mr-2 h-4 w-4" />
-              Check symptoms
+              {checkMutation.isPending ? "Checking..." : "Check symptoms"}
             </Button>
-            <Button type="button" variant="outline" className="rounded-xl">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setSelectedSymptoms([])}>
               Clear
             </Button>
           </div>
+
+          {checkMutation.isError && (
+            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <ShieldAlert className="mt-0.5 h-4 w-4" />
+              We couldn&apos;t analyze these symptoms right now. Please try again.
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {recentChecks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Recent symptom checks</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recentChecks.slice(0, 3).map((check) => (
+              <div key={check.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="font-medium text-slate-900">{check.symptoms.join(", ")}</p>
+                  <Badge variant={check.riskLevel === "HIGH" ? "danger" : check.riskLevel === "MEDIUM" ? "warning" : "success"}>
+                    {check.riskLevel}
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-600">
+                  {typeof check.analysis === "object" && check.analysis && "summary" in check.analysis ? String((check.analysis as Record<string, unknown>).summary) : "Risk assessment ready."}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <AlertTriangle className="mt-0.5 h-4 w-4" />
+        This tool provides general guidance, not a diagnosis. Seek medical attention for urgent symptoms.
+      </div>
     </div>
   );
 }
