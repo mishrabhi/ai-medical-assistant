@@ -1,4 +1,5 @@
 import { notificationRepository } from "./notification.repository";
+import { ApiError } from "../../utils/ApiError";
 
 class NotificationService {
     //get notifications
@@ -11,7 +12,7 @@ class NotificationService {
     const result = await notificationRepository.markAsRead(id, userId);
 
     if (result.count === 0) {
-      throw new Error("Notification not found.");
+      throw new ApiError(404, "Notification not found.");
     }
 
     return {

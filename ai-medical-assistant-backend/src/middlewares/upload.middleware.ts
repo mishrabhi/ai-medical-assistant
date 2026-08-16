@@ -1,8 +1,13 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 
-const uploadPath = "uploads/reports";
+const uploadPath = path.join(
+  process.cwd(),
+  "uploads",
+  "reports"
+);
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, {
@@ -15,11 +20,10 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
 
-    filename: (_req, file, cb) => {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      file.originalname.replace(/\s+/g, "-");
+  filename: (_req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    const uniqueName = `${Date.now()}-${crypto.randomUUID()}${extension}`;
 
     cb(null, uniqueName);
   },
@@ -39,11 +43,7 @@ export const uploadReport = multer({
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(
-        new Error(
-          "Only PDF, JPG and PNG reports are allowed."
-        )
-      );
+      cb(new Error("Only PDF, JPG and PNG reports are allowed."));
     }
   },
 

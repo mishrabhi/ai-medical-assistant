@@ -2,10 +2,7 @@ import { Response } from "express";
 import { env } from "../config/env";
 
 //set refresh token cookies
-export const setRefreshTokenCookie = (
-  res: Response,
-  token: string
-) => {
+export const setRefreshTokenCookie = (res: Response, token: string) => {
   res.cookie("refreshToken", token, {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
@@ -14,9 +11,11 @@ export const setRefreshTokenCookie = (
   });
 };
 
-//clear refresh token cookies 
-export const clearRefreshTokenCookie = (
-  res: Response
-) => {
-  res.clearCookie("refreshToken");
+//clear refresh token cookies
+export const clearRefreshTokenCookie = (res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
 };

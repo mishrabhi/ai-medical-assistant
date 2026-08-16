@@ -1,6 +1,7 @@
 import { aiService } from "../../services/ai/ai.service";
 import { chatRepository } from "./chat.repository";
 import { CreateChatSessionDTO, SendMessageDTO } from "./chat.types";
+import { ApiError } from "../../utils/ApiError";
 
 class ChatService {
   //create session
@@ -13,7 +14,7 @@ class ChatService {
     const session = await chatRepository.findSessionById(sessionId, userId);
 
     if (!session) {
-      throw new Error("Chat session not found.");
+      throw new ApiError(404, "Chat session not found.");
     }
 
     await chatRepository.createMessage(sessionId, "USER", data.message);
@@ -62,7 +63,7 @@ class ChatService {
     );
 
     if (!session) {
-      throw new Error("Chat session not found.");
+      throw new ApiError(404, "Chat session not found.");
     }
 
     return session;
@@ -73,7 +74,7 @@ class ChatService {
     const session = await chatRepository.findSessionById(sessionId, userId);
 
     if (!session) {
-      throw new Error("Chat session not found.");
+      throw new ApiError(404, "Chat session not found.");
     }
 
     return chatRepository.findMessages(sessionId);
@@ -84,7 +85,7 @@ class ChatService {
     const result = await chatRepository.archiveSession(sessionId, userId);
 
     if (result.count === 0) {
-      throw new Error("Chat session not found.");
+      throw new ApiError(404, "Chat session not found.");
     }
 
     return {
@@ -96,7 +97,7 @@ class ChatService {
     const result = await chatRepository.deleteSession(sessionId, userId);
 
     if (result.count === 0) {
-      throw new Error("Chat session not found.");
+      throw new ApiError(404, "Chat session not found.");
     }
 
     return {

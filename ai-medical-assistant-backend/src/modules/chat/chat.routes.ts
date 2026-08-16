@@ -10,6 +10,8 @@ import {
   sendMessageSchema,
 } from "./chat.validation";
 
+import { aiRateLimiter } from "../../middlewares/rateLimiter.middleware";
+
 const router = Router();
 
 router.post(
@@ -22,6 +24,7 @@ router.post(
 router.post(
   "/sessions/:id/messages",
   authenticate,
+   aiRateLimiter,
   validate(sendMessageSchema),
   asyncHandler(chatController.sendMessage)
 );

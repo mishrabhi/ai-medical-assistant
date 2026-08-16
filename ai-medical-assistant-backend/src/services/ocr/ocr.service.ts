@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { PDFParse } from "pdf-parse";
 import { createWorker } from "tesseract.js";
+import { ApiError } from "../../utils/ApiError";
 
 class OCRService {
   async extractText(filePath: string, mimeType: string) {
@@ -19,7 +20,7 @@ class OCRService {
       return this.extractImageText(absolutePath);
     }
 
-    throw new Error("Unsupported file type for OCR.");
+    throw new ApiError(400, "Unsupported file type for OCR.");
   }
 
   private async extractPdfText(filePath: string) {

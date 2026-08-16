@@ -1,4 +1,5 @@
 import { emergencyContactRepository } from "./emergency-contact.repository";
+import { ApiError } from "../../utils/ApiError";
 
 import {
   CreateEmergencyContactDTO,
@@ -20,7 +21,7 @@ class EmergencyContactService {
     const contact = await emergencyContactRepository.findById(id, userId);
 
     if (!contact) {
-      throw new Error("Emergency contact not found.");
+      throw new ApiError(404, "Emergency contact not found.");
     }
 
     return contact;
@@ -35,7 +36,7 @@ class EmergencyContactService {
     const contact = await emergencyContactRepository.findById(id, userId);
 
     if (!contact) {
-      throw new Error("Emergency contact not found.");
+      throw new ApiError(404, "Emergency contact not found.");
     }
 
     await emergencyContactRepository.update(id, userId, data);
@@ -48,7 +49,7 @@ class EmergencyContactService {
     const result = await emergencyContactRepository.delete(id, userId);
 
     if (result.count === 0) {
-      throw new Error("Emergency contact not found.");
+      throw new ApiError(404, "Emergency contact not found.");
     }
 
     return {

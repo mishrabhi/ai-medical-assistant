@@ -1,5 +1,6 @@
 import { appointmentRepository } from "./appointment.repository";
 import { CreateAppointmentDTO } from "./appointment.types";
+import { ApiError } from "../../utils/ApiError";
 
 class AppointmentService {
   //create appointment
@@ -7,17 +8,17 @@ class AppointmentService {
     const appointmentDate = new Date(data.appointmentDate);
 
     if (appointmentDate <= new Date()) {
-      throw new Error("Appointment date must be in the future.");
+      throw new ApiError(400, "Appointment date must be in the future.");
     }
 
     const doctor = await appointmentRepository.findDoctorById(data.doctorId);
 
     if (!doctor) {
-      throw new Error("Doctor not found.");
+      throw new ApiError(404, "Doctor not found.");
     }
 
     if (!doctor.isAvailable) {
-      throw new Error("Doctor is currently unavailable.");
+      throw new ApiError(404, "Doctor is currently unavailable.");
     }
 
     const existingAppointment =
@@ -27,7 +28,7 @@ class AppointmentService {
       );
 
     if (existingAppointment) {
-      throw new Error("This appointment slot is already booked.");
+      throw new ApiError(404, "This appointment slot is already booked.");
     }
 
     return appointmentRepository.create(userId, data);
@@ -42,7 +43,7 @@ class AppointmentService {
     const appointment = await appointmentRepository.findById(id, userId);
 
     if (!appointment) {
-      throw new Error("Appointment not found.");
+      throw new ApiError(404, "Appointment not found.");
     }
 
     return appointment;
@@ -57,19 +58,19 @@ class AppointmentService {
     const appointment = await appointmentRepository.findById(id, userId);
 
     if (!appointment) {
-      throw new Error("Appointment not found.");
+      throw new ApiError(404, "Appointment not found.");
     }
 
     if (appointment.status === "CANCELLED") {
-      throw new Error("Cancelled appointment cannot be updated.");
+      throw new ApiError(400, "Cancelled appointment cannot be updated.");
     }
 
     if (appointment.status === "COMPLETED") {
-      throw new Error("Completed appointment cannot be updated.");
+      throw new ApiError(400, "Completed appointment cannot be updated.");
     }
 
     if (status === "COMPLETED" && appointment.status !== "CONFIRMED") {
-      throw new Error("Only confirmed appointments can be completed.");
+      throw new ApiError(400, "Only confirmed appointments can be completed.");
     }
 
     await appointmentRepository.updateStatus(id, userId, status);
@@ -82,11 +83,11 @@ class AppointmentService {
     const appointment = await appointmentRepository.findById(id, userId);
 
     if (!appointment) {
-      throw new Error("Appointment not found.");
+      throw new ApiError(404, "Appointment not found.");
     }
 
     if (appointment.status === "COMPLETED") {
-      throw new Error("Completed appointment cannot be deleted.");
+      throw new ApiError(400, "Completed appointment cannot be deleted.");
     }
 
     await appointmentRepository.delete(id, userId);

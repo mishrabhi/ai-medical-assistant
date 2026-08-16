@@ -1,5 +1,6 @@
 import { CreateDoctorDTO, UpdateDoctorDTO } from "./doctor.types";
 import { doctorRepository } from "./doctor.repository";
+import { ApiError } from "../../utils/ApiError";
 
 class DoctorService {
   async createDoctor(data: CreateDoctorDTO) {
@@ -14,7 +15,7 @@ class DoctorService {
     const doctor = await doctorRepository.findById(id);
 
     if (!doctor) {
-      throw new Error("Doctor not found.");
+      throw new ApiError(404, "Doctor not found.");
     }
 
     return doctor;
@@ -24,7 +25,7 @@ class DoctorService {
     const result = await doctorRepository.updateAvailability(id, isAvailable);
 
     if (result.count === 0) {
-      throw new Error("Doctor not found.");
+      throw new ApiError(404, "Doctor not found.");
     }
 
     return doctorRepository.findById(id);
@@ -34,7 +35,7 @@ class DoctorService {
     const doctor = await doctorRepository.findById(id);
 
     if (!doctor) {
-      throw new Error("Doctor not found.");
+      throw new ApiError(404,"Doctor not found.");
     }
 
     return doctorRepository.update(id, data);
@@ -44,7 +45,7 @@ class DoctorService {
     const doctor = await doctorRepository.findById(id);
 
     if (!doctor) {
-      throw new Error("Doctor not found.");
+      throw new ApiError(404, "Doctor not found.");
     }
 
     await doctorRepository.delete(id);

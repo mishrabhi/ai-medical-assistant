@@ -9,6 +9,8 @@ import { uploadReport } from "../../middlewares/upload.middleware";
 import { reportController } from "./report.controller";
 import { uploadReportSchema } from "./report.validation";
 
+import { aiRateLimiter } from "../../middlewares/rateLimiter.middleware";
+
 const router = Router();
 
 router.post(
@@ -46,6 +48,7 @@ router.post(
 router.post(
   "/:id/analyze",
   authenticate,
+  aiRateLimiter,
   asyncHandler(reportController.analyze)
 );
 

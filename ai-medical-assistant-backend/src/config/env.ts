@@ -22,7 +22,7 @@ const schema = z.object({
 
   CLIENT_URL: z.string().url(),
 
-  OPENAI_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string().min(1),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -8,6 +8,7 @@ import {
 } from "../../lib/jwt";
 import { AuthRepository, authRepository } from "./auth.repository";
 import { LoginUserDTO, RegisterUserDTO } from "./auth.types";
+import { ApiError } from "../../utils/ApiError";
 
 export class AuthService {
   //register user
@@ -15,7 +16,7 @@ export class AuthService {
     const existingUser = await authRepository.findUserByEmail(data.email);
 
     if (existingUser) {
-      throw new Error("User already exists");
+      throw new ApiError(409, "User already exists");
     }
 
     const passwordHash = await hashPassword(data.password);
@@ -25,6 +26,17 @@ export class AuthService {
       passwordHash,
     });
 
+    const safeUser = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+    };
+
     const payload = {
       userId: user.id,
       email: user.email,
@@ -48,7 +60,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user,
+      user: safeUser,
     };
   }
 
@@ -57,7 +69,7 @@ export class AuthService {
     const user = await authRepository.findUserByEmail(data.email);
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new ApiError(401, "Invalid credentials");
     }
 
     const passwordMatch = await comparePassword(
@@ -66,8 +78,19 @@ export class AuthService {
     );
 
     if (!passwordMatch) {
-      throw new Error("Invalid credentials");
+      throw new ApiError(401, "Invalid credentials");
     }
+
+    const safeUser = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+    };
 
     const payload = {
       userId: user.id,
@@ -92,7 +115,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user,
+      user: safeUser,
     };
   }
 
@@ -101,7 +124,7 @@ export class AuthService {
     const user = await authRepository.getCurrentUser(userId);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new ApiError(404, "User not found");
     }
     return user;
   }
@@ -111,10 +134,16 @@ export class AuthService {
     const storedToken = await authRepository.findRefreshToken(token);
 
     if (!storedToken) {
-      throw new Error("Invalid refresh token");
+      throw new ApiError(401, "Invalid refresh token");
     }
 
-    const payload = verifyRefreshToken(token);
+    let payload;
+
+    try {
+      payload = verifyRefreshToken(token);
+    } catch {
+      throw new ApiError(401, "Invalid refresh token");
+    }
 
     await authRepository.deleteRefreshToken(token);
 

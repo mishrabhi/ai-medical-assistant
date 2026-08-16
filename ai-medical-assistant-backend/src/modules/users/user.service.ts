@@ -1,6 +1,7 @@
 import { userRepository } from "./user.repository";
 import { UpdateProfileDTO } from "./user.types";
 import { comparePassword, hashPassword } from "../../lib/bcrypt";
+import { ApiError } from "../../utils/ApiError";
 
 class UserService {
   //get user profile
@@ -8,7 +9,7 @@ class UserService {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found.");
+      throw new ApiError(404, "User not found.");
     }
 
     const { passwordHash, ...profile } = user;
@@ -21,7 +22,7 @@ class UserService {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found.");
+      throw new ApiError(404, "User not found.");
     }
 
     const updatedUser = await userRepository.updateProfile(userId, data);
@@ -40,13 +41,13 @@ class UserService {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found.");
+      throw new ApiError(404, "User not found.");
     }
 
     const isValid = await comparePassword(currentPassword, user.passwordHash);
 
     if (!isValid) {
-      throw new Error("Current password is incorrect.");
+      throw new ApiError(401, "Current password is incorrect.");
     }
 
     const passwordHash = await hashPassword(newPassword);
@@ -63,7 +64,7 @@ class UserService {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found.");
+      throw new ApiError(404, "User not found.");
     }
 
     const updatedUser = await userRepository.updateAvatar(userId, avatar);
@@ -78,7 +79,7 @@ class UserService {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-      throw new Error("User not found.");
+      throw new ApiError(404, "User not found.");
     }
 
     await userRepository.updateAccountStatus(userId, false);

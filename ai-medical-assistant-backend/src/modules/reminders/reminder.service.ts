@@ -1,5 +1,6 @@
 import { reminderRepository } from "./reminder.repository";
 import { CreateReminderDTO, UpdateReminderDTO } from "./reminder.types";
+import { ApiError } from "../../utils/ApiError";
 
 class ReminderService {
   //create reminder
@@ -7,7 +8,7 @@ class ReminderService {
     const scheduledFor = new Date(data.scheduledFor);
 
     if (scheduledFor <= new Date()) {
-      throw new Error("Reminder time must be in the future.");
+      throw new ApiError(400, "Reminder time must be in the future.");
     }
 
     return reminderRepository.create(userId, data);
@@ -22,7 +23,7 @@ class ReminderService {
     const reminder = await reminderRepository.findById(id, userId);
 
     if (!reminder) {
-      throw new Error("Reminder not found.");
+      throw new ApiError(404, "Reminder not found.");
     }
 
     return reminder;
@@ -33,14 +34,14 @@ class ReminderService {
     const reminder = await reminderRepository.findById(id, userId);
 
     if (!reminder) {
-      throw new Error("Reminder not found.");
+      throw new ApiError(404, "Reminder not found.");
     }
 
     if (data.scheduledFor) {
       const scheduledFor = new Date(data.scheduledFor);
 
       if (scheduledFor <= new Date()) {
-        throw new Error("Reminder time must be in the future.");
+        throw new ApiError(400, "Reminder time must be in the future.");
       }
     }
 
@@ -54,7 +55,7 @@ class ReminderService {
     const result = await reminderRepository.delete(id, userId);
 
     if (result.count === 0) {
-      throw new Error("Reminder not found.");
+      throw new ApiError(404, "Reminder not found.");
     }
 
     return {
@@ -71,11 +72,11 @@ class ReminderService {
     const reminder = await reminderRepository.findById(id, userId);
 
     if (!reminder) {
-      throw new Error("Reminder not found.");
+      throw new ApiError(404, "Reminder not found.");
     }
 
     if (reminder.status === "COMPLETED") {
-      throw new Error("Completed reminder cannot be updated.");
+      throw new ApiError(400, "Completed reminder cannot be updated.");
     }
 
     await reminderRepository.updateStatus(id, userId, status);
@@ -88,11 +89,11 @@ class ReminderService {
     const reminder = await reminderRepository.findById(id, userId);
 
     if (!reminder) {
-      throw new Error("Reminder not found.");
+      throw new ApiError(404, "Reminder not found.");
     }
 
     if (reminder.status === "COMPLETED") {
-      throw new Error("Reminder is already completed.");
+      throw new ApiError(400, "Reminder is already completed.");
     }
 
     if (reminder.repeatInterval === "NONE") {
@@ -102,7 +103,7 @@ class ReminderService {
     }
 
     if (reminder.repeatInterval === "CUSTOM") {
-      throw new Error("Custom repeat interval is not supported yet.");
+      throw new ApiError(400, "Custom repeat interval is not supported yet.");
     }
 
     const nextScheduledFor = new Date(reminder.scheduledFor);

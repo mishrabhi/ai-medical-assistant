@@ -7,11 +7,14 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import { symptomController } from "./symptom.controller";
 import { symptomCheckSchema } from "./symptom.validation";
 
+import { aiRateLimiter } from "../../middlewares/rateLimiter.middleware";
+
 const router = Router();
 
 router.post(
   "/check",
   authenticate,
+  aiRateLimiter,
   validate(symptomCheckSchema),
   asyncHandler(symptomController.check)
 );

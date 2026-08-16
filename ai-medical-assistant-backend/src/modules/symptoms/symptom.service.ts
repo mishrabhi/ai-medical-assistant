@@ -1,6 +1,7 @@
 import { aiService } from "../../services/ai/ai.service";
 import { symptomRepository } from "./symptom.repository";
 import { SymptomCheckDTO } from "./symptom.types";
+import { ApiError } from "../../utils/ApiError";
 
 class SymptomService {
   async checkSymptoms(userId: string, data: SymptomCheckDTO) {
@@ -22,7 +23,7 @@ class SymptomService {
     const result = await symptomRepository.findById(id, userId);
 
     if (!result) {
-      throw new Error("Symptom check not found.");
+      throw new ApiError(404, "Symptom check not found.");
     }
 
     return result;
@@ -32,7 +33,7 @@ class SymptomService {
     const result = await symptomRepository.delete(id, userId);
 
     if (result.count === 0) {
-      throw new Error("Symptom check not found.");
+      throw new ApiError(404, "Symptom check not found.");
     }
 
     return {
