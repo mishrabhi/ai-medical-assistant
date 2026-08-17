@@ -16,9 +16,15 @@ export const metadata: Metadata = {
     "A secure healthcare platform for reports, symptoms, appointments, reminders, and AI guidance.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full bg-slate-50 text-slate-900">
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
