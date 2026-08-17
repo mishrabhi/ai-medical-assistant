@@ -102,9 +102,9 @@ class ReminderService {
       return reminderRepository.findById(id, userId);
     }
 
-    if (reminder.repeatInterval === "CUSTOM") {
-      throw new ApiError(400, "Custom repeat interval is not supported yet.");
-    }
+    // if (reminder.repeatInterval === "CUSTOM") {
+    //   throw new ApiError(400, "Custom repeat interval is not supported yet.");
+    // }
 
     const nextScheduledFor = new Date(reminder.scheduledFor);
 

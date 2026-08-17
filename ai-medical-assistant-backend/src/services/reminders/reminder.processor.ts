@@ -21,9 +21,9 @@ class ReminderProcessor {
         continue;
       }
 
-      if (reminder.repeatInterval === "CUSTOM") {
-        continue;
-      }
+      // if (reminder.repeatInterval === "CUSTOM") {
+      //   continue;
+      // }
 
       const nextScheduledFor = new Date(reminder.scheduledFor);
 

@@ -4,9 +4,7 @@ import { authenticate } from "../../middlewares/auth.middleware";
 import { validate } from "../../middlewares/validation.middleware";
 import { asyncHandler } from "../../utils/asyncHandler";
 
-import {
-  emergencyContactController,
-} from "./emergency-contact.controller";
+import { emergencyContactController } from "./emergency-contact.controller";
 
 import {
   createEmergencyContactSchema,
@@ -19,50 +17,34 @@ router.post(
   "/",
   authenticate,
   validate(createEmergencyContactSchema),
-  asyncHandler(
-    emergencyContactController.create
-  )
+  asyncHandler(emergencyContactController.create),
 );
 
+router.get("/", authenticate, asyncHandler(emergencyContactController.getAll));
+
 router.get(
-  "/",
+  "/emergency",
   authenticate,
-  asyncHandler(
-    emergencyContactController.getAll
-  )
+  asyncHandler(emergencyContactController.getEmergencyContacts),
 );
 
 router.get(
   "/:id",
   authenticate,
-  asyncHandler(
-    emergencyContactController.getById
-  )
+  asyncHandler(emergencyContactController.getById),
 );
 
 router.patch(
   "/:id",
   authenticate,
   validate(updateEmergencyContactSchema),
-  asyncHandler(
-    emergencyContactController.update
-  )
+  asyncHandler(emergencyContactController.update),
 );
 
 router.delete(
   "/:id",
   authenticate,
-  asyncHandler(
-    emergencyContactController.delete
-  )
-);
-
-router.get(
-  "/emergency",
-  authenticate,
-  asyncHandler(
-    emergencyContactController.getEmergencyContacts
-  )
+  asyncHandler(emergencyContactController.delete),
 );
 
 export default router;
