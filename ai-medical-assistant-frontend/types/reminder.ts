@@ -9,7 +9,6 @@ export enum RepeatInterval {
   DAILY = "DAILY",
   WEEKLY = "WEEKLY",
   MONTHLY = "MONTHLY",
-  CUSTOM = "CUSTOM",
 }
 
 export interface Reminder {

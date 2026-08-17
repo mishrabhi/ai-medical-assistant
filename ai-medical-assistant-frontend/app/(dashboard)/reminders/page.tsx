@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import {
   Clock,
   Repeat2,
@@ -13,7 +13,12 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +31,7 @@ import {
   RepeatInterval,
   type Reminder,
   type CreateReminderPayload,
+  type UpdateReminderPayload,
 } from "@/types/reminder";
 
 const statusLabels: Record<ReminderStatus, string> = {
@@ -48,8 +54,47 @@ const repeatLabels: Record<RepeatInterval, string> = {
   DAILY: "Daily",
   WEEKLY: "Weekly",
   MONTHLY: "Monthly",
-  CUSTOM: "Custom",
 };
+
+function formatDateTimeForInput(dateString: string) {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const timezoneOffset = date.getTimezoneOffset();
+
+  return new Date(date.getTime() - timezoneOffset * 60 * 1000)
+    .toISOString()
+    .slice(0, 16);
+}
+
+function getApiErrorMessage(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error
+  ) {
+    const response = (
+      error as {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
+      }
+    ).response;
+
+    return response?.data?.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return undefined;
+}
 
 export default function RemindersPage() {
   const {
@@ -67,13 +112,15 @@ export default function RemindersPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [scheduledFor, setScheduledFor] = useState("");
-  const [repeatInterval, setRepeatInterval] = useState<RepeatInterval>(
-    RepeatInterval.NONE,
-  );
+  const [repeatInterval, setRepeatInterval] =
+    useState<RepeatInterval>(RepeatInterval.NONE);
 
   const [formError, setFormError] = useState("");
 
   const reminders = listQuery.data?.data ?? [];
+
+  const isSaving =
+    createMutation.isPending || updateMutation.isPending;
 
   const resetForm = () => {
     setShowForm(false);
@@ -91,41 +138,33 @@ export default function RemindersPage() {
   };
 
   const handleEdit = (reminder: Reminder) => {
-    const date = new Date(reminder.scheduledFor);
-
-    const localDateTime = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000,
-    )
-      .toISOString()
-      .slice(0, 16);
-
     setEditingId(reminder.id);
     setTitle(reminder.title);
     setDescription(reminder.description ?? "");
-    setScheduledFor(localDateTime);
+    setScheduledFor(
+      formatDateTimeForInput(reminder.scheduledFor),
+    );
     setRepeatInterval(reminder.repeatInterval);
     setFormError("");
     setShowForm(true);
   };
 
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
+    event: FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
     setFormError("");
 
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+
+    if (!trimmedTitle) {
       setFormError("Please enter a reminder title.");
       return;
     }
 
     if (!scheduledFor) {
       setFormError("Please select a date and time.");
-      return;
-    }
-
-    if (repeatInterval === RepeatInterval.CUSTOM) {
-      setFormError("Custom repeat interval is not supported yet.");
       return;
     }
 
@@ -141,44 +180,39 @@ export default function RemindersPage() {
       return;
     }
 
-    const payload: CreateReminderPayload = {
-      title: title.trim(),
-      ...(description.trim() && {
-        description: description.trim(),
-      }),
-      scheduledFor: date.toISOString(),
-      repeatInterval,
-    };
-
     try {
       if (editingId) {
+        const payload: UpdateReminderPayload = {
+          title: trimmedTitle,
+          ...(trimmedDescription && {
+            description: trimmedDescription,
+          }),
+          scheduledFor: date.toISOString(),
+          repeatInterval,
+        };
+
         await updateMutation.mutateAsync({
           id: editingId,
           payload,
         });
       } else {
+        const payload: CreateReminderPayload = {
+          title: trimmedTitle,
+          ...(trimmedDescription && {
+            description: trimmedDescription,
+          }),
+          scheduledFor: date.toISOString(),
+          repeatInterval,
+        };
+
         await createMutation.mutateAsync(payload);
       }
 
       resetForm();
     } catch (error: unknown) {
-      const message =
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error
-          ? (
-              error as {
-                response?: {
-                  data?: {
-                    message?: string;
-                  };
-                };
-              }
-            ).response?.data?.message
-          : undefined;
-
       setFormError(
-        message ?? "Unable to save reminder. Please try again.",
+        getApiErrorMessage(error) ??
+          "Unable to save reminder. Please try again.",
       );
     }
   };
@@ -193,7 +227,7 @@ export default function RemindersPage() {
         status,
       });
     } catch {
-      // Mutation error state is handled by React Query.
+      // React Query mutation state handles the error.
     }
   };
 
@@ -201,7 +235,7 @@ export default function RemindersPage() {
     try {
       await completeMutation.mutateAsync(id);
     } catch {
-      // Mutation error state is handled by React Query.
+      // React Query mutation state handles the error.
     }
   };
 
@@ -217,7 +251,7 @@ export default function RemindersPage() {
     try {
       await deleteMutation.mutateAsync(id);
     } catch {
-      // Mutation error state is handled by React Query.
+      // React Query mutation state handles the error.
     }
   };
 
@@ -299,7 +333,10 @@ export default function RemindersPage() {
           </CardHeader>
 
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
               {/* Title */}
               <div className="space-y-2">
                 <label
@@ -313,12 +350,11 @@ export default function RemindersPage() {
                   id="reminder-title"
                   value={title}
                   maxLength={150}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="e.g. Take morning medication"
-                  disabled={
-                    createMutation.isPending ||
-                    updateMutation.isPending
+                  onChange={(event) =>
+                    setTitle(event.target.value)
                   }
+                  placeholder="e.g. Take morning medication"
+                  disabled={isSaving}
                 />
 
                 <p className="text-xs text-slate-400">
@@ -343,10 +379,7 @@ export default function RemindersPage() {
                     setDescription(event.target.value)
                   }
                   placeholder="Add some details about this reminder..."
-                  disabled={
-                    createMutation.isPending ||
-                    updateMutation.isPending
-                  }
+                  disabled={isSaving}
                   className="min-h-24 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                 />
 
@@ -355,7 +388,7 @@ export default function RemindersPage() {
                 </p>
               </div>
 
-              {/* Date and repeat */}
+              {/* Date and Repeat */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label
@@ -375,10 +408,7 @@ export default function RemindersPage() {
                     onChange={(event) =>
                       setScheduledFor(event.target.value)
                     }
-                    disabled={
-                      createMutation.isPending ||
-                      updateMutation.isPending
-                    }
+                    disabled={isSaving}
                   />
                 </div>
 
@@ -398,10 +428,7 @@ export default function RemindersPage() {
                         event.target.value as RepeatInterval,
                       )
                     }
-                    disabled={
-                      createMutation.isPending ||
-                      updateMutation.isPending
-                    }
+                    disabled={isSaving}
                     className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                   >
                     <option value={RepeatInterval.NONE}>
@@ -419,13 +446,6 @@ export default function RemindersPage() {
                     <option value={RepeatInterval.MONTHLY}>
                       Monthly
                     </option>
-
-                    <option
-                      value={RepeatInterval.CUSTOM}
-                      disabled
-                    >
-                      Custom — Coming soon
-                    </option>
                   </select>
                 </div>
               </div>
@@ -441,27 +461,22 @@ export default function RemindersPage() {
                   type="button"
                   variant="outline"
                   onClick={resetForm}
-                  disabled={
-                    createMutation.isPending ||
-                    updateMutation.isPending
-                  }
+                  disabled={isSaving}
                 >
                   Cancel
                 </Button>
 
                 <Button
                   type="submit"
-                  disabled={
-                    createMutation.isPending ||
-                    updateMutation.isPending
-                  }
+                  disabled={isSaving}
                   className="bg-teal-700 hover:bg-teal-800"
                 >
-                  {createMutation.isPending ||
-                  updateMutation.isPending ? (
+                  {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {editingId ? "Updating..." : "Creating..."}
+                      {editingId
+                        ? "Updating..."
+                        : "Creating..."}
                     </>
                   ) : (
                     <>
@@ -544,6 +559,7 @@ export default function RemindersPage() {
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
                       <span className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-teal-700" />
+
                         {new Date(
                           reminder.scheduledFor,
                         ).toLocaleString()}
@@ -551,6 +567,7 @@ export default function RemindersPage() {
 
                       <span className="flex items-center gap-2">
                         <Repeat2 className="h-4 w-4 text-teal-700" />
+
                         {repeatLabels[
                           reminder.repeatInterval
                         ] ?? reminder.repeatInterval}
@@ -559,7 +576,9 @@ export default function RemindersPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1">
-                    {reminder.status === ReminderStatus.ACTIVE && (
+                    {/* Pause */}
+                    {reminder.status ===
+                      ReminderStatus.ACTIVE && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -578,7 +597,9 @@ export default function RemindersPage() {
                       </Button>
                     )}
 
-                    {reminder.status === ReminderStatus.PAUSED && (
+                    {/* Resume */}
+                    {reminder.status ===
+                      ReminderStatus.PAUSED && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -597,6 +618,7 @@ export default function RemindersPage() {
                       </Button>
                     )}
 
+                    {/* Complete */}
                     {reminder.status !==
                       ReminderStatus.COMPLETED && (
                       <Button
@@ -614,15 +636,14 @@ export default function RemindersPage() {
                       </Button>
                     )}
 
+                    {/* Edit */}
                     {reminder.status !==
                       ReminderStatus.COMPLETED && (
                       <Button
                         variant="ghost"
                         size="icon"
                         title="Edit reminder"
-                        disabled={
-                          updateMutation.isPending
-                        }
+                        disabled={updateMutation.isPending}
                         onClick={() =>
                           handleEdit(reminder)
                         }
@@ -631,6 +652,7 @@ export default function RemindersPage() {
                       </Button>
                     )}
 
+                    {/* Delete */}
                     <Button
                       variant="ghost"
                       size="icon"
