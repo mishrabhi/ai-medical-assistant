@@ -7,14 +7,6 @@ export type ReportType =
   | "PRESCRIPTION"
   | "OTHER";
 
-export type ReportStatus =
-  | "UPLOADED"
-  | "OCR_PROCESSING"
-  | "OCR_COMPLETED"
-  | "ANALYZING"
-  | "ANALYZED"
-  | "FAILED";
-
 export interface MedicalReport {
   id: string;
   userId: string;
@@ -45,3 +37,5 @@ export interface OCRResult {
   reportId: string;
   text: string;
 }
+
+export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
