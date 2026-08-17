@@ -7,4 +7,4 @@ uploads
 /src/generated/prisma
 
 uploads/*
-!uploads/.gitkeep
+!uploads/.gitkeep.DS_Store
