@@ -14,6 +14,7 @@ import notificationRoutes from "../modules/notifications";
 import emergencyContactRoutes from "../modules/emergency-contacts";
 import userRoutes from "../modules/users";
 import adminRoutes from "../modules/admin";
+import adminAppointmentRoutes from "../modules/appointments/admin-appointment.routes";
 
 const router = Router();
 
@@ -49,5 +50,6 @@ router.use("/emergency-contacts", emergencyContactRoutes);
 router.use("/users", userRoutes);
 router.use("/admin/doctors", adminDoctorRoutes);
 router.use("/admin", adminRoutes);
+router.use("/admin/appointments", adminAppointmentRoutes);
 
 export default router;

@@ -116,6 +116,23 @@ class ReminderRepository {
       },
     });
   }
+
+  //claim due reminder
+  async claimDueReminder(id: string, userId: string) {
+  return prisma.reminder.updateMany({
+    where: {
+      id,
+      userId,
+      status: "ACTIVE",
+      scheduledFor: {
+        lte: new Date(),
+      },
+    },
+    data: {
+      status: "PAUSED",
+    },
+  });
+}
 }
 
 export const reminderRepository = new ReminderRepository();

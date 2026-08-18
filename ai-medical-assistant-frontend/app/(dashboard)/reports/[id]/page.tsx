@@ -15,6 +15,7 @@ import {
 
 import { useReport, useReportAnalysis } from "@/hooks/useReports";
 import { useReports } from "@/hooks/useReports";
+import { apiClient } from "@/lib/api/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,6 +96,24 @@ export default function ReportDetailPage() {
       router.push("/reports");
     } catch {
       // Error is displayed below through mutation state.
+    }
+  };
+
+  const handleOpenOriginalReport = async () => {
+    try {
+      const response = await apiClient.get(`/reports/${reportId}/file`, {
+        responseType: "blob",
+      });
+
+      const blobUrl = URL.createObjectURL(response.data);
+
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 60_000);
+    } catch {
+      // File could not be opened.
     }
   };
 
@@ -237,11 +256,12 @@ export default function ReportDetailPage() {
           </div>
 
           <div className="mt-5">
-            <Button variant="outline" asChild>
-              <a href={currentReport.fileUrl} target="_blank" rel="noreferrer">
-                <FileText className="mr-2 h-4 w-4" />
-                Open Original Report
-              </a>
+            <Button
+              variant="outline"
+              onClick={() => void handleOpenOriginalReport()}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Open Original Report
             </Button>
           </div>
         </CardContent>

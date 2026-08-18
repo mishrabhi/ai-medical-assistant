@@ -1,11 +1,7 @@
-import dotenv from "dotenv";
-import { startReminderJob } from "./jobs/reminder.job";
-import { logger } from "./utils/logger";
-
-dotenv.config();
-
 import app from "./app";
 import { env } from "./config/env";
+import { startReminderJob } from "./jobs/reminder.job";
+import { logger } from "./utils/logger";
 
 app.listen(env.PORT, () => {
   logger.info("Server started", {

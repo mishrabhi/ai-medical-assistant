@@ -6,6 +6,15 @@ class ReminderProcessor {
     const reminders = await reminderRepository.findDueReminders();
 
     for (const reminder of reminders) {
+      const claimed = await reminderRepository.claimDueReminder(
+        reminder.id,
+        reminder.userId,
+      );
+
+      if (claimed.count === 0) {
+        continue;
+      }
+
       await notificationService.createReminderNotification(
         reminder.userId,
         reminder.title,
@@ -21,22 +30,31 @@ class ReminderProcessor {
         continue;
       }
 
-      // if (reminder.repeatInterval === "CUSTOM") {
-      //   continue;
-      // }
+      if (reminder.repeatInterval === "CUSTOM") {
+        // Custom recurrence is not implemented yet.
+        // Keep the reminder paused rather than generating
+        // duplicate notifications every minute.
+        continue;
+      }
 
       const nextScheduledFor = new Date(reminder.scheduledFor);
 
       if (reminder.repeatInterval === "DAILY") {
-        nextScheduledFor.setDate(nextScheduledFor.getDate() + 1);
+        nextScheduledFor.setDate(
+          nextScheduledFor.getDate() + 1,
+        );
       }
 
       if (reminder.repeatInterval === "WEEKLY") {
-        nextScheduledFor.setDate(nextScheduledFor.getDate() + 7);
+        nextScheduledFor.setDate(
+          nextScheduledFor.getDate() + 7,
+        );
       }
 
       if (reminder.repeatInterval === "MONTHLY") {
-        nextScheduledFor.setMonth(nextScheduledFor.getMonth() + 1);
+        nextScheduledFor.setMonth(
+          nextScheduledFor.getMonth() + 1,
+        );
       }
 
       await reminderRepository.updateScheduledFor(

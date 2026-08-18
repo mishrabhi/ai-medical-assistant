@@ -32,6 +32,17 @@ class NotificationController {
       message: result.message,
     });
   };
+
+  getUnreadCount = async (req: Request, res: Response) => {
+    const count = await notificationService.getUnreadCount(req.user!.userId);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        count,
+      },
+    });
+  };
 }
 
 export const notificationController = new NotificationController();

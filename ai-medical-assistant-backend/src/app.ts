@@ -6,7 +6,6 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
-import path from "path";
 
 import routes from "./routes";
 
@@ -19,11 +18,6 @@ app.use(
     origin: env.CLIENT_URL,
     credentials: true,
   })
-);
-
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
 );
 
 app.use(compression());

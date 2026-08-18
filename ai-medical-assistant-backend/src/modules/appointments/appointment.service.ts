@@ -1,9 +1,11 @@
 import { appointmentRepository } from "./appointment.repository";
 import { CreateAppointmentDTO } from "./appointment.types";
 import { ApiError } from "../../utils/ApiError";
+import { notificationService } from "../notifications/notification.service";
+import { logger } from "../../utils/logger";
 
 class AppointmentService {
-  //create appointment
+  // Create appointment
   async createAppointment(userId: string, data: CreateAppointmentDTO) {
     const appointmentDate = new Date(data.appointmentDate);
 
@@ -18,7 +20,7 @@ class AppointmentService {
     }
 
     if (!doctor.isAvailable) {
-      throw new ApiError(404, "Doctor is currently unavailable.");
+      throw new ApiError(400, "Doctor is currently unavailable.");
     }
 
     const existingAppointment =
@@ -28,17 +30,34 @@ class AppointmentService {
       );
 
     if (existingAppointment) {
-      throw new ApiError(404, "This appointment slot is already booked.");
+      throw new ApiError(409, "This appointment slot is already booked.");
     }
 
-    return appointmentRepository.create(userId, data);
+    const appointment = await appointmentRepository.create(userId, data);
+
+    try {
+      await notificationService.createAppointmentNotification(
+        userId,
+        "Appointment Booked",
+        `Your appointment with ${doctor.fullName} has been booked for ${appointmentDate.toLocaleString()}.`,
+      );
+    } catch (error) {
+      logger.error("Failed to create appointment booking notification", {
+        error,
+        userId,
+        appointmentId: appointment.id,
+      });
+    }
+
+    return appointment;
   }
 
-  //get appointment of user
+  // Get appointments of user
   async getAppointments(userId: string) {
     return appointmentRepository.findAllByUser(userId);
   }
 
+  // Get appointment by ID
   async getAppointmentById(id: string, userId: string) {
     const appointment = await appointmentRepository.findById(id, userId);
 
@@ -49,7 +68,7 @@ class AppointmentService {
     return appointment;
   }
 
-  //update status
+  // Update appointment status
   async updateStatus(
     id: string,
     userId: string,
@@ -61,24 +80,48 @@ class AppointmentService {
       throw new ApiError(404, "Appointment not found.");
     }
 
+    // Patients can only cancel their own appointments.
+    if (status !== "CANCELLED") {
+      throw new ApiError(
+        403,
+        "You are not authorized to set this appointment status.",
+      );
+    }
+
     if (appointment.status === "CANCELLED") {
-      throw new ApiError(400, "Cancelled appointment cannot be updated.");
+      throw new ApiError(400, "Appointment is already cancelled.");
     }
 
     if (appointment.status === "COMPLETED") {
-      throw new ApiError(400, "Completed appointment cannot be updated.");
+      throw new ApiError(400, "Completed appointment cannot be cancelled.");
     }
 
-    if (status === "COMPLETED" && appointment.status !== "CONFIRMED") {
-      throw new ApiError(400, "Only confirmed appointments can be completed.");
-    }
+    const updated = await appointmentRepository.updateStatus(
+      id,
+      userId,
+      "CANCELLED",
+    );
 
-    await appointmentRepository.updateStatus(id, userId, status);
+    try {
+      await notificationService.createAppointmentNotification(
+        userId,
+        "Appointment Cancelled",
+        `Your appointment with ${appointment.doctor.fullName} scheduled for ${new Date(
+          appointment.appointmentDate,
+        ).toLocaleString()} has been cancelled.`,
+      );
+    } catch (error) {
+      logger.error("Failed to create appointment cancellation notification", {
+        error,
+        userId,
+        appointmentId: appointment.id,
+      });
+    }
 
     return appointmentRepository.findById(id, userId);
   }
 
-  //delete appointment
+  // Delete appointment
   async deleteAppointment(id: string, userId: string) {
     const appointment = await appointmentRepository.findById(id, userId);
 

@@ -45,12 +45,13 @@ class ReportRepository {
 
   //delete user medical report
   async delete(id: string, userId: string) {
-    return prisma.medicalReport.delete({
-      where: {
-        id,
-      },
-    });
-  }
+  return prisma.medicalReport.deleteMany({
+    where: {
+      id,
+      userId,
+    },
+  });
+}
 
   //update ocr text
   async updateOCRText(

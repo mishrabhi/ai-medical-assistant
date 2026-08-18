@@ -28,6 +28,12 @@ router.get(
 );
 
 router.get(
+  "/:id/file",
+  authenticate,
+  asyncHandler(reportController.getFile),
+);
+
+router.get(
   "/:id",
   authenticate,
   asyncHandler(reportController.getById)
@@ -42,6 +48,7 @@ router.delete(
 router.post(
   "/:id/ocr",
   authenticate,
+  aiRateLimiter,
   asyncHandler(reportController.processOCR)
 );
 

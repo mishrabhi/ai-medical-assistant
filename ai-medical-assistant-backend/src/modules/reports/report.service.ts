@@ -45,14 +45,21 @@ class ReportService {
     }
 
     // Delete physical file
-    await fs
-      .unlink(path.join(process.cwd(), report.fileUrl.replace(/^\//, "")))
-      .catch(() => {
-        // Ignore if file is already missing
-      });
+    const filePath = path.resolve(
+      process.cwd(),
+      report.fileUrl.replace(/^\/+/, ""),
+    );
+
+    await fs.unlink(filePath).catch(() => {
+      // Ignore if file is already missing
+    });
 
     // Delete database record
-    await reportRepository.delete(reportId, userId);
+    const result = await reportRepository.delete(reportId, userId);
+
+    if (result.count === 0) {
+      throw new ApiError(404, "Medical report not found.");
+    }
   }
 
   //process OCR text
@@ -109,6 +116,25 @@ class ReportService {
     }
 
     return report;
+  }
+
+  //get reported file
+  async getReportFile(reportId: string, userId: string) {
+    const report = await reportRepository.findById(reportId, userId);
+
+    if (!report) {
+      throw new ApiError(404, "Medical report not found.");
+    }
+
+    const filePath = path.resolve(
+      process.cwd(),
+      report.fileUrl.replace(/^\/+/, ""),
+    );
+
+    return {
+      filePath,
+      mimeType: report.mimeType ?? "application/octet-stream",
+    };
   }
 }
 

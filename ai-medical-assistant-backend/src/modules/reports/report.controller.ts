@@ -98,6 +98,18 @@ class ReportController {
     data: report,
   });
 };
+
+//get file
+getFile = async (req: Request, res: Response) => {
+  const result = await reportService.getReportFile(
+    req.params.id as string,
+    req.user!.userId,
+  );
+
+  res.setHeader("Content-Type", result.mimeType);
+
+  return res.sendFile(result.filePath);
+};
 }
 
 export const reportController = new ReportController();

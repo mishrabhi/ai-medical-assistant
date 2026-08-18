@@ -2,14 +2,17 @@ import { notificationRepository } from "./notification.repository";
 import { ApiError } from "../../utils/ApiError";
 
 class NotificationService {
-    //get notifications
+  // Get notifications
   async getNotifications(userId: string) {
     return notificationRepository.findAllByUser(userId);
   }
 
-  //marks as read
+  // Mark as read
   async markAsRead(id: string, userId: string) {
-    const result = await notificationRepository.markAsRead(id, userId);
+    const result = await notificationRepository.markAsRead(
+      id,
+      userId,
+    );
 
     if (result.count === 0) {
       throw new ApiError(404, "Notification not found.");
@@ -20,7 +23,7 @@ class NotificationService {
     };
   }
 
-  //mark all as read
+  // Mark all as read
   async markAllAsRead(userId: string) {
     await notificationRepository.markAllAsRead(userId);
 
@@ -29,17 +32,36 @@ class NotificationService {
     };
   }
 
-  //create reminder notification
+  // Get unread count
+  async getUnreadCount(userId: string) {
+    return notificationRepository.countUnreadByUser(userId);
+  }
+
+  // Reminder notification
   async createReminderNotification(
-  userId: string,
-  reminderTitle: string
-) {
-  return notificationRepository.create(
-    userId,
-    "Medication Reminder",
-    `It's time for: ${reminderTitle}`
-  );
-}
+    userId: string,
+    reminderTitle: string,
+  ) {
+    return notificationRepository.create(
+      userId,
+      "Medication Reminder",
+      `It's time for: ${reminderTitle}`,
+    );
+  }
+
+  // Appointment notification
+  async createAppointmentNotification(
+    userId: string,
+    title: string,
+    message: string,
+  ) {
+    return notificationRepository.create(
+      userId,
+      title,
+      message,
+    );
+  }
 }
 
-export const notificationService = new NotificationService();
+export const notificationService =
+  new NotificationService();

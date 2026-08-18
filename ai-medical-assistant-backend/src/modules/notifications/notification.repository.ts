@@ -45,6 +45,15 @@ class NotificationRepository {
       },
     });
   }
+
+  async countUnreadByUser(userId: string) {
+  return prisma.notification.count({
+    where: {
+      userId,
+      isRead: false,
+    },
+  });
+}
 }
 
 export const notificationRepository = new NotificationRepository();

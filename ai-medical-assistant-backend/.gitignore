@@ -3,8 +3,9 @@ dist
 .env
 uploads
 *.log
-
 /src/generated/prisma
 
 uploads/*
-!uploads/.gitkeep.DS_Store
+!uploads/.gitkeep
+
+.DS_Store

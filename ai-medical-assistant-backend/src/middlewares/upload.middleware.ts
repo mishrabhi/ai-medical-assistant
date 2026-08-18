@@ -2,12 +2,9 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { ApiError } from "../utils/ApiError";
 
-const uploadPath = path.join(
-  process.cwd(),
-  "uploads",
-  "reports"
-);
+const uploadPath = path.join(process.cwd(), "uploads", "reports");
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, {
@@ -43,7 +40,7 @@ export const uploadReport = multer({
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF, JPG and PNG reports are allowed."));
+      cb(new ApiError(400, "Only PDF, JPG and PNG reports are allowed."));
     }
   },
 
